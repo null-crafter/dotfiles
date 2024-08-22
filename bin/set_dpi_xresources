@@ -1,0 +1,5 @@
+#!/bin/sh
+export TEMP_FILE="/tmp/xresources.local"
+echo "Xft.dpi: $1" > $TEMP_FILE
+xrdb -merge $TEMP_FILE
+rm $TEMP_FILE

@@ -1,0 +1,6 @@
+#! /usr/bin/env sh
+if ! [ "${WAYLAND_DISPLAY}x" = "x" ]; then
+	wl-copy
+else
+	xclip -selection clipboard
+fi

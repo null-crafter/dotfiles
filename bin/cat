@@ -1,0 +1,6 @@
+#! /usr/bin/env sh
+if hash bat >/dev/null 2>&1; then
+    bat -pp "$@"
+else
+    /usr/bin/cat "$@"
+fi

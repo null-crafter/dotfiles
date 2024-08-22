@@ -1,0 +1,4 @@
+#! /usr/bin/env sh
+SCREENSHOTS_DIR="$HOME/Pictures/Screenshots"
+mkdir -p $SCREENSHOTS_DIR
+/usr/bin/grim $@ ${SCREENSHOTS_DIR}/$(date +'%s_grim.png')

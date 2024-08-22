@@ -1,0 +1,44 @@
+#! /bin/env sh
+# This script should be run by the git user.
+if ! hash git >/dev/null 2>&1; then
+    echo "git is not installed. You need to install it first."
+    exit 1
+fi
+
+REPOS_FILE="$1"
+GIT_REPO_ROOT="/srv/git/"
+MIRROR_ROOT="${GIT_REPO_ROOT}mirrors/"
+
+if [ ! -d "$MIRROR_ROOT" ]; then
+    echo "$MIRROR_ROOT doesn't exist. Please create it and give it to the git user!" && exit 1
+fi
+MIRROR_ROOT_OWNER="$(stat --format '%U' "$MIRROR_ROOT")"
+if [ ! "${MIRROR_ROOT_OWNER}" = "git" ]; then
+   echo "$MIRROR_ROOT doesn't belong to the git user. Exiting..." && exit 1
+fi
+
+[ ! -f "$REPOS_FILE" ] && echo "give me a mirror list file pls >_<" && exit 1
+
+repos="$(cat "$REPOS_FILE"| xargs)"
+
+update() {
+    pwd=$PWD
+    repo_name="$(basename "$1")"
+    [ -z "$repo_name" ] && echo "Can't determine repository name, skipping $1..." && return 1
+    repo_dir="${MIRROR_ROOT}${repo_name}"
+    if [ ! -d "$repo_dir" ]; then
+        git clone --mirror "$1" "$repo_dir"
+        [ ! "$?" = "0" ] && echo "$1 clone failed. Skipping..." && return 1
+        # git submodule update --init --recursive
+    else
+        cd "$repo_dir"
+        git remote update
+        # git submodule foreach git pull
+    fi
+    cd $pwd
+    return 0
+}
+
+for r in $repos; do
+    update $r
+done

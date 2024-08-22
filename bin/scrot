@@ -1,0 +1,7 @@
+#! /usr/bin/env sh
+if [ ! -f "/usr/bin/scrot" ]; then
+    echo "file not found: /usr/bin/scrot, please install scrot first"
+    exit 1
+fi
+mkdir -p "$HOME/Pictures/Screenshots"
+/usr/bin/scrot $HOME/Pictures/Screenshots/%b%d::%H%M%S.png $*

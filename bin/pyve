@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+venv_home="$HOME/.local/share/virtualenvs"
+mkdir -p $venv_home
+venv_dir="pyve-$(echo "$(basename $PWD)"-"$(echo $PWD|sha1sum|cut -d ' ' -f1)")"
+full_path="$venv_home/$venv_dir"
+[ ! -d $full_path ] && python -m venv $full_path --prompt="$(basename $PWD)"
+. $full_path/bin/activate
+for p in pip jedi-language-server black isort; do
+    python -m pip install -U $p >/dev/null
+done
+echo $full_path

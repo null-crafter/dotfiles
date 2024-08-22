@@ -1,0 +1,7 @@
+#! /usr/bin/env sh
+if ! hash python >/dev/null 2>&1; then
+	echo "Python is not installed! Exiting..."
+	exit 1
+fi
+TMP=$(mktemp)
+python -m json.tool $1 >$TMP && mv $TMP $1

@@ -1,0 +1,4 @@
+#! /usr/bin/env sh
+for e in nvim vim vi nano; do
+    hash $e >/dev/null 2>&1 && exec $e "$@"
+done

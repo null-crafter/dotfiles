@@ -1,0 +1,4 @@
+#!/bin/sh
+filename=$(basename -- "$1")
+ext="${filename##*.}"
+ffmpeg -i "$1" -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1" -c:v h264 -c:a aac "$1.barred-1080p.$ext"

@@ -1,0 +1,5 @@
+#! /bin/sh
+MPDDIR="$HOME/.local/share/mpd"
+mkdir -p $MPDDIR
+mkdir $MPDDIR/playlists
+touch $MPDDIR/log

@@ -1,0 +1,10 @@
+#! /bin/env sh
+# You need to install discount(https://github.com/Orc/discount) and weasyprint to use this script.
+# Usage:
+# Suppose you have a markdown file: test.md, run `md2pdf test.md` to generate test.pdf
+if ! [ -f "$1" ]; then
+    echo no such file
+    exit 1
+fi
+
+mkd2html < $1 |weasyprint - "${1%.*}".pdf

@@ -1,0 +1,4 @@
+#!/bin/sh
+filename=$(basename -- "$1")
+ext="${filename##*.}"
+ffmpeg -i "$1" -af afftdn -c:v copy -c:a aac "$1.afftdn.$ext"

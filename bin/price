@@ -1,0 +1,8 @@
+#! /usr/bin/zsh
+# usage:
+# for cryptos: price CRYPTO_CURRENCY
+# for stocks, etc: WIP...
+# examples:
+# price bitcoin (returns usd price value)
+PRICE=$(curl -L -s "https://api.coingecko.com/api/v3/simple/price?ids=$1&vs_currencies=usd"|jq ".\"$1\".usd")
+echo ${PRICE}

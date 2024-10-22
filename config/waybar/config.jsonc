@@ -16,11 +16,11 @@
         "sway/window"
     ],
     "modules-right": [
-        "mpd",
-        "idle_inhibitor",
+        // "mpd",
+        // "idle_inhibitor",
         "pulseaudio",
         "network",
-        "power-profiles-daemon",
+        // "power-profiles-daemon",
         "cpu",
         "memory",
         "temperature",

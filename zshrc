@@ -38,6 +38,7 @@ else
 	alias l='ls -Flash'
 fi
 alias z='zathura --fork'
+alias gaa='git add .'
 # aliases
 
 bindkey -v '^?' backward-delete-char

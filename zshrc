@@ -81,6 +81,15 @@ autoload -U colors && colors
 }
 # ---- volta
 
+# ---- pnpm
+hash pnpm >/dev/null 2>&1 && {
+	export PNPM_HOME="$HOME/.local/share/pnpm"
+	case ":$PATH:" in
+		*":$PNPM_HOME:"*) ;;
+		*) export PATH="$PNPM_HOME:$PATH" ;;
+	esac
+}
+# ---- pnpm
 # ---- direnv
 hash direnv >/dev/null 2>&1 && {
 	eval "$(direnv hook zsh)"

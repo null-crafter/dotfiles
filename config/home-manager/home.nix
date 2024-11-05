@@ -15,6 +15,13 @@
   # release notes.
   home.stateVersion = "24.05"; # Please read the comment before changing.
   targets.genericLinux.enable = true;
+  gtk = {
+  	enable = true;
+	theme.name = "adw-gtk3";
+	cursorTheme.name = "Bibata-Modern-Ice";
+	iconTheme.name = "GruvboxPlus";
+  };
+
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
@@ -53,6 +60,7 @@
     ".local/share/zsh/zsh-fast-syntax-highlighting".source =
     "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
   };
+
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a

@@ -106,6 +106,9 @@ bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
+# plugins
+syntaxhighlight=$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+[ -f ${syntaxhighlight} ] && source ${syntaxhighlight}
 
 # edit command line
 autoload edit-command-line; zle -N edit-command-line

@@ -21,10 +21,7 @@ export LC_COLLATE="C"
 export LC_ALL="en_US.UTF-8"
 export NVIM_TUI_ENABLE_TRUE_COLOR=1
 export _JAVA_AWT_WM_NONREPARENTING=1 # fix java gui programs on dwm and bspwm
-[ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ] && command -v "Hyprland" >/dev/null 2>&1 && {
-	export MOZ_ENABLE_WAYLAND=1
-	export XDG_SESSION_TYPE=wayland
-	export XDG_CURRENT_DESKTOP=hyprland
-	export QT_QPA_PLATFORM=wayland
-	Hyprland
-}
+export MOZ_ENABLE_WAYLAND=1
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=hyprland
+export QT_QPA_PLATFORM=wayland

@@ -15,7 +15,13 @@ PROMPT+="
 $ "
 export PROMPT
 export PATH="$HOME/.bin:$PATH"
+export PATH="$HOME/.config/emacs/bin:$PATH"
 
+# zfunc
+ZFUNC_DIR="$HOME/.config/zsh/zfunc"
+[ -d ${ZFUNC_DIR} ] || mkdir -p ${ZFUNC_DIR}
+fpath+=${ZFUNC_DIR}
+# zfunc
 # things
 export EDITOR=nvim
 # things
@@ -39,6 +45,9 @@ else
 fi
 alias z='zathura --fork'
 alias gaa='git add .'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../../'
 # aliases
 
 bindkey -v '^?' backward-delete-char
@@ -74,13 +83,18 @@ autoload -U colors && colors
 	fpath=(${ASDF_DIR}/completions $fpath)
 }
 # ---- ASDF VM
+# ---- python
+
+command -v poetry >/dev/null 2>&1 && [ ! -f "$HOME/.config/zsh/zfunc/_poetry" ] && {
+	poetry completions zsh > $HOME/.config/zsh/zfunc/_poetry
+}
+# ---- python
 # ---- volta
 [ -d "$HOME/.volta" ] && {
 	export VOLTA_HOME=$HOME/.volta
 	export PATH="$VOLTA_HOME/bin:$PATH"
 }
 # ---- volta
-
 # ---- pnpm
 hash pnpm >/dev/null 2>&1 && {
 	export PNPM_HOME="$HOME/.local/share/pnpm"
@@ -90,6 +104,7 @@ hash pnpm >/dev/null 2>&1 && {
 	esac
 }
 # ---- pnpm
+
 # ---- direnv
 hash direnv >/dev/null 2>&1 && {
 	eval "$(direnv hook zsh)"
@@ -106,7 +121,7 @@ bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
-# plugins
+# pluins
 syntaxhighlight=$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 [ -f ${syntaxhighlight} ] && source ${syntaxhighlight}
 
@@ -115,3 +130,5 @@ autoload edit-command-line; zle -N edit-command-line
 bindkey  ^x^e edit-command-line
 stty -ixon
 command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
+
+[ -f "$HOME/.zshrc.local" ] && source $HOME/.zshrc.local

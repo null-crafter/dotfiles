@@ -5,6 +5,10 @@
 	defaultBranch = main
 [includeIf "gitdir:~/Git/College/"]
     path = ~/Git/College/gitconfig
+[includeIf "gitdir:~/Git/Sites/"]
+    path = ~/Git/Sites/gitconfig
+[includeIf "gitdir:~/Git/Work/"]
+    path = ~/Git/Work/gitconfig
 [alias]
     utccommit = !GPG_TTY=$(tty) git commit --date=\"$(date --utc +%Y-%m-%dT%H:%M:%S%z)\" -S
     lg = "!f() { \

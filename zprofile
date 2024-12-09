@@ -25,3 +25,4 @@ export MOZ_ENABLE_WAYLAND=1
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=hyprland
 export QT_QPA_PLATFORM=wayland
+[ -f "$HOME/.zprofile.local" ] && source "$HOME/.zprofile.local"

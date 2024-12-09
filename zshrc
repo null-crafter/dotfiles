@@ -10,7 +10,8 @@ cat() {
 	fi
 }
 
-autoload -U colors && colors PROMPT="%B%{$fg[green]%}[%{$fg[green]%}%n%{$fg[green]%}@%{$fg[magenta]%}%M %{$fg[green]%}%~%{$fg[green]%}]%{$reset_color%}%b [RET=%?]"
+autoload -U colors && colors
+PROMPT="%B%{$fg[green]%}[%{$fg[green]%}%n%{$fg[green]%}@%{$fg[magenta]%}%M %{$fg[green]%}%~%{$fg[green]%}]%{$reset_color%}%b [RET=%?]"
 PROMPT+="
 $ "
 export PROMPT

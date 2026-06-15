@@ -1,0 +1,21 @@
+window-padding-x = 4,2
+window-padding-y = 6,0
+
+font-family = "JetBrainsMono Nerd Font"
+font-codepoint-map = U+E000=Linkarzu Logo
+font-size = 14
+
+macos-titlebar-style = hidden
+confirm-close-surface = false
+keybind = cmd+s=toggle_quick_terminal
+
+macos-option-as-alt = right
+
+quick-terminal-animation-duration = 0.08
+
+keybind = super+i=inspector:toggle
+keybind = super+r=reload_config
+macos-icon = official
+background-opacity = 0.95
+background-blur = true
+unfocused-split-opacity = 0.7

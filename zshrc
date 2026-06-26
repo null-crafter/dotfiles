@@ -4,6 +4,7 @@ HISTFILE=~/.zsh_history
 touch $HISTFILE
 
 export PATH="$HOME/.bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$HOME/.config/emacs/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
@@ -39,8 +40,8 @@ test -x "$(which asdf 2>/dev/null)" >/dev/null 2>&1 && {
 hash pnpm >/dev/null 2>&1 && {
 	export PNPM_HOME="$HOME/.local/share/pnpm"
 	case ":$PATH:" in
-		*":$PNPM_HOME:"*) ;;
-		*) export PATH="$PNPM_HOME:$PATH" ;;
+		*":$PNPM_HOME/bin:"*) ;;
+		*) export PATH="$PNPM_HOME/bin:$PATH" ;;
 	esac
 }
 # ---- pnpm

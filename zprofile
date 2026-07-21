@@ -1,11 +1,11 @@
 #!/usr/bin/env zsh
-for b in firefox librewolf chromium-browser chromium brave;do
+for b in select-browser.zsh floorp firefox librewolf chromium-browser chromium brave; do
 	hash "$b" >/dev/null 2>&1 && {
 		export BROWSER="$b"
 		break
 	}
 done
-for e in nvim vim nano vi emacs; do
+for e in select-editor.zsh nvim vim nano vi emacs; do
 	hash "$e" >/dev/null 2>&1 && {
 		export EDITOR="$e"
 		break
@@ -15,7 +15,7 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="${GOPATH}/bin:${PATH}"
 export GOPATH="$HOME/go"
 export PATH="$HOME/.bun/bin:$PATH"
-[ -d "$HOME/.ghcup" ] && export PATH="$HOME/.ghcup/bin:$PATH"
+export PATH="$HOME/.ghcup/bin:$PATH"
 
 export LANG="en_US.UTF-8"
 export LC_COLLATE="C"

@@ -1,8 +1,8 @@
 [core]
-    sshCommand = ssh -i ~/.ssh/id_github -F /dev/null
+    sshCommand = ssh
 [user]
-	email = mail@shcsed.local
-	name = shcsed
+	email = mail@null-crafter.local
+	name = null-crafter
 [init]
 	defaultBranch = main
 [includeIf "gitdir:~/Git/College/"]

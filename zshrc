@@ -30,16 +30,18 @@ fpath+=${ZFUNC_DIR}
 # ---- START mise / ASDF VM
 export __SEELE_DEVMGR=nil
 if command -v mise > /dev/null 2>&1; then
-    export __SEELE_DEVMGR=mise
+    export __SEELE_DEVMGR=mise-pre
     eval "$(mise activate zsh)"
+    export __SEELE_DEVMGR=mise
 else
     test -x "$(which asdf 2>/dev/null)" >/dev/null 2>&1 && {
-        export __SEELE_DEVMGR=asdf-vm
+        export __SEELE_DEVMGR=asdf-vm-pre
         export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
         mkdir -p "${ASDF_DATA_DIR:-$HOME/.asdf}/completions"
         [ -f "${ASDF_DATA_DIR:-$HOME/.asdf}/completions/_asdf" ] || asdf completion zsh > "${ASDF_DATA_DIR:-$HOME/.asdf}/completions/_asdf"
         fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
-            [ -d "$HOME/.asdf/plugins/java" ] && . ~/.asdf/plugins/java/set-java-home.zsh
+        [ -d "$HOME/.asdf/plugins/java" ] && . ~/.asdf/plugins/java/set-java-home.zsh
+        export __SEELE_DEVMGR=asdf-vm
     }
 fi
 # ---- END mise  / ASDF VM

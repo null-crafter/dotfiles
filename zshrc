@@ -26,16 +26,23 @@ fpath+=${ZFUNC_DIR}
 # ---- ghc
 [ -d "$HOME/.ghcup" ] && export PATH="$HOME/.ghcup/bin:$PATH"
 # ---- ghc
-# ---- ASDF VM
-test -x "$(which asdf 2>/dev/null)" >/dev/null 2>&1 && {
+# ---- START mise / ASDF VM
+export __SEELE_DEVMGR=nil
+if command -v mise > /dev/null 2>&1; then
+    export __SEELE_DEVMGR=mise
+    eval "$(mise activate zsh)"
+else
+    test -x "$(which asdf 2>/dev/null)" >/dev/null 2>&1 && {
+        export __SEELE_DEVMGR=asdf-vm
         export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
         mkdir -p "${ASDF_DATA_DIR:-$HOME/.asdf}/completions"
         [ -f "${ASDF_DATA_DIR:-$HOME/.asdf}/completions/_asdf" ] || asdf completion zsh > "${ASDF_DATA_DIR:-$HOME/.asdf}/completions/_asdf"
         fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
-	[ -d "$HOME/.asdf/plugins/java" ] && . ~/.asdf/plugins/java/set-java-home.zsh
+            [ -d "$HOME/.asdf/plugins/java" ] && . ~/.asdf/plugins/java/set-java-home.zsh
+    }
+fi
+# ---- END mise  / ASDF VM
 
-}
-# ---- ASDF VM
 # ---- pnpm
 hash pnpm >/dev/null 2>&1 && {
 	export PNPM_HOME="$HOME/.local/share/pnpm"

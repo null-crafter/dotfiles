@@ -12,8 +12,9 @@ for e in select-editor.zsh nvim vim nano vi emacs; do
 	}
 done
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="${GOPATH}/bin:${PATH}"
 export GOPATH="$HOME/go"
+export PATH="${GOPATH}/bin:${PATH}"
+
 export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$HOME/.ghcup/bin:$PATH"
 

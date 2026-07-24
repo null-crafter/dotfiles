@@ -10,6 +10,9 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 
 
+[ ! -z "$WAYLAND_DISPLAY" ] && {
+    [ -z "$PROTON_ENABLE_WAYLAND" ] && export PROTON_ENABLE_WAYLAND=1
+}
 
 export EDITOR=nvim
 

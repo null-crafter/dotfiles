@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+exec codium --ozone-platform-hint=auto "$@"

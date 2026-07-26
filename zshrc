@@ -136,14 +136,15 @@ PROMPT+="
 $ "
 export PROMPT
 
-hash oh-my-posh >/dev/null 2>&1 && {
-    eval "$(oh-my-posh init zsh)"
-    export __SEELE_PROMPTENG=oh-my-posh
-}
-[ -z $__SEELE_PROMPTENG ] && hash starship >/dev/null 2>&1 && {
+hash starship >/dev/null 2>&1 && {
     eval "$(starship init zsh)"
     export __SEELE_PROMPTENG=starship
 }
+[ -z $__SEELE_PROMPTENG ] && hash oh-my-posh >/dev/null 2>&1 && {
+    eval "$(oh-my-posh init zsh)"
+    export __SEELE_PROMPTENG=oh-my-posh
+}
+
 
 # prompt
 

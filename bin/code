@@ -1,2 +1,6 @@
 #!/usr/bin/env sh
-exec codium --ozone-platform-hint=auto "$@"
+
+[ -z $__SEELE_CODEBIN ] && export __SEELE_CODEBIN='codium' # the vscode / vscode forks like "cursor"
+[ -z $__SEELE_CODEBIN_OPTS ] && export __SEELE_CODEBIN_OPTS=(--ozone-platform-hint=auto)
+
+exec $__SEELE_CODEBIN ${__SEELE_CODEBIN_OPTS[@]} "$@"

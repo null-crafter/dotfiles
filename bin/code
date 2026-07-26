@@ -4,6 +4,7 @@
 # If you use the official vscode, you do not need this script
 
 [ -z $__SEELE_CODEBIN ] && export __SEELE_CODEBIN='codium' # one of the vscode forks like "cursor"
-[ -z $__SEELE_CODEBIN_OPTS ] && export __SEELE_CODEBIN_OPTS=(--ozone-platform-hint=auto)
+[ -z $__SEELE_CODEBIN_OPTS ] && [ ! -z $WAYLAND_DISPLAY ] && export __SEELE_CODEBIN_OPTS=(--ozone-platform-hint=auto)
+[ -z $__SEELE_CODEBIN_OPTS ] && export __SEELE_CODEBIN_OPTS=()
 
 exec $__SEELE_CODEBIN ${__SEELE_CODEBIN_OPTS[@]} "$@"

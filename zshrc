@@ -176,9 +176,16 @@ alias gp='git push'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../../'
-alias ruff-fmt='ruff check --select I --fix; ruff format'
 
 # aliases
+
+
+# BEGIN fuctions
+ruff_fmt() {
+    ruff check --select I --fix "$@"
+    ruff format "$@"
+}
+# END functions
 
 
 stty -ixon

@@ -3,8 +3,7 @@
 # I try to make vscode forks more ergonomic in this script
 # If you use the official vscode, you do not need this script
 
-[ -z $__SEELE_CODEBIN ] && export __SEELE_CODEBIN='codium' # one of the vscode forks like "cursor"
-[ -z $__SEELE_CODEBIN_OPTS ] && [ ! -z $WAYLAND_DISPLAY ] && export __SEELE_CODEBIN_OPTS=(--ozone-platform-hint=auto)
-[ -z $__SEELE_CODEBIN_OPTS ] && export __SEELE_CODEBIN_OPTS=()
+CODE=codium
+[ ! -z $WAYLAND_DISPLAY ] && OPTS=(--ozone-platform-hint=auto)
 
-exec $__SEELE_CODEBIN ${__SEELE_CODEBIN_OPTS[@]} "$@"
+exec $CODE ${OPTS[@]} "$@"

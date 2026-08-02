@@ -185,6 +185,9 @@ ruff_fmt() {
     ruff check --select I --fix "$@"
     ruff format "$@"
 }
+vifzf() {
+    $EDITOR `fzf`
+}
 # END functions
 
 

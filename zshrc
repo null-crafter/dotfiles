@@ -9,7 +9,7 @@ export PATH="$HOME/.config/emacs/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 
-[ -z "$TMUX_PANE" ] && export TERM=xterm-256color
+[ -z "$TMUX_PANE" ] || export TERM=xterm-256color
 
 
 [ ! -z "$WAYLAND_DISPLAY" ] && {

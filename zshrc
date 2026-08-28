@@ -15,6 +15,7 @@ export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 [ ! -z "$WAYLAND_DISPLAY" ] && {
     [ -z "$PROTON_ENABLE_WAYLAND" ] && export PROTON_ENABLE_WAYLAND=1
 }
+[ -z "$PROTON_DXVK_LOWLATENCY" ] &&  export PROTON_DXVK_LOWLATENCY=1
 
 export EDITOR=nvim
 

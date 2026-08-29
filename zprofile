@@ -23,7 +23,15 @@ export LC_COLLATE="C"
 export LC_ALL="en_US.UTF-8"
 export NVIM_TUI_ENABLE_TRUE_COLOR=1
 export _JAVA_AWT_WM_NONREPARENTING=1 # fix java gui programs on dwm and bspwm
+
+# begin proton / wine / dxvk / misc compat
 export PROTON_DXVK_LOWLATENCY=1
+export PROTON_USE_NTSYNC=1
+export PROTON_LOCAL_SHADER_CACHE=1
+export DXVK_CONFIG="dxvk.enableGraphicsPipelineLibrary = True"
+# end proton / wine / dxvk / misc compat
+
+
 [ ! -z "$WAYLAND_DISPLAY" ] && {
 	export MOZ_ENABLE_WAYLAND=1
 	export XDG_SESSION_TYPE=wayland

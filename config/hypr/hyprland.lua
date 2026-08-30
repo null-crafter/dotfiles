@@ -62,10 +62,63 @@ for key, dir in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
     hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
 
-for i = 1, 10 do
-    local key = i % 10    -- workspace 10 lives on the 0 key
-    hl.bind(mod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
-    hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+-- 10 workspaces per monitor, never shared, no output names hardcoded.
+-- Blocks are handed out left-to-right on first sight and then STAY PUT: a monitor
+-- keeps the block it was given, so plugging in a projector mid-session never
+-- renumbers the screen you are working on. Newcomers get the lowest free block.
+local PER_MONITOR = 10
+local blocks      = {}    -- monitor name -> block index, sticky for the session
+
+local function assign_workspaces()
+    local mons = hl.get_monitors()   -- already excludes mirrors and disabled outputs
+    table.sort(mons, function(a, b)
+        if a.x ~= b.x then return a.x < b.x end
+        return a.y < b.y             -- tiebreak for vertically stacked screens
+    end)
+
+    -- Honour remembered blocks that are still free; drop the rest for reassignment.
+    local taken = {}
+    for _, mon in ipairs(mons) do
+        local b = blocks[mon.name]
+        if b and not taken[b] then
+            taken[b] = true
+        else
+            blocks[mon.name] = nil
+        end
+    end
+
+    for _, mon in ipairs(mons) do
+        if not blocks[mon.name] then
+            local b = 1
+            while taken[b] do b = b + 1 end
+            blocks[mon.name] = b
+            taken[b] = true
+        end
+    end
+
+    for _, mon in ipairs(mons) do
+        local base = (blocks[mon.name] - 1) * PER_MONITOR
+        for i = 1, PER_MONITOR do
+            hl.workspace_rule({
+                workspace = tostring(base + i),
+                monitor   = mon.name,
+                default   = (i == 1),
+            })
+        end
+    end
+end
+
+hl.on("hyprland.start",         assign_workspaces)
+hl.on("monitor.added",          assign_workspaces)
+hl.on("monitor.removed",        assign_workspaces)
+hl.on("monitor.layout_changed", assign_workspaces)
+
+-- "r~N" is the Nth workspace available on the *focused* monitor. The rules above are
+-- what make it skip the other monitors' blocks -- without them it degenerates to 1..10.
+for i = 1, PER_MONITOR do
+    local key = tostring(i % 10)    -- workspace 10 lives on the 0 key
+    hl.bind(mod .. " + " .. key,         hl.dsp.focus({ workspace = "r~" .. i }))
+    hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = "r~" .. i }))
 end
 
 -- "-1"/"+1" wrap through the monitor list relative to the focused one.

@@ -27,6 +27,10 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.config({
     general = { gaps_in = 5, gaps_out = 10, border_size = 2, layout = "master" },
     input   = { kb_layout = "us", follow_mouse = 1, repeat_delay = 200, repeat_rate = 35 },
+    -- Wake the screens on pointer motion. Deliberately NOT key_press_enables_dpms:
+    -- that listener fires on key *release* too, so it would undo SUPER+Escape the
+    -- instant you let go. Nudge the mouse or trackpad to wake.
+    misc    = { mouse_move_enables_dpms = true },
 })
 
 -- Noctalia owns the bar, notifications, lock screen, wallpaper and OSDs.
@@ -50,7 +54,8 @@ hl.bind(mod .. " + C", hl.dsp.window.center())
 -- Session: panel for the normal case, hard exit as the escape hatch.
 hl.bind(mod .. " + M", noctalia("panel-toggle session"))
 hl.bind(mod .. " + SHIFT + M", hl.dsp.exit())
-hl.bind(mod .. " + Escape", noctalia("session lock"))
+hl.bind(mod .. " + Escape", hl.dsp.dpms({ action = "off" }))
+hl.bind(mod .. " + SHIFT + Escape", noctalia("session lock"))
 hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(noctalia_restart))
 
 hl.bind(mod .. " + N", noctalia("panel-toggle control-center"))

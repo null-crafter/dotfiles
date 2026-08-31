@@ -33,6 +33,7 @@ hl.config({
 -- It ships no systemd unit, so the compositor starts it.
 hl.on("hyprland.start", function()
     hl.exec_cmd("noctalia --daemon")
+    hl.exec_cmd("systemctl --user start hyprpolkitagent")
 end)
 
 hl.bind(mod .. " + Return", hl.dsp.exec_cmd(term))

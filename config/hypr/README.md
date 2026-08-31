@@ -2,4 +2,6 @@
 
 
 ## Requirements
-noctalia v5.0.0
+* noctalia v5.0.0
+* hyprpolkitagent
+

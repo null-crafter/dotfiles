@@ -176,6 +176,7 @@ fi
 alias z='zathura --fork'
 alias gaa='git add .'
 alias gp='git push'
+alias rm='rm -v'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../../'

@@ -70,69 +70,72 @@ for key, dir in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
     hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
 
--- 10 workspaces per monitor, never shared, no output names hardcoded.
--- Blocks are handed out left-to-right on first sight and then STAY PUT: a monitor
--- keeps the block it was given, so plugging in a projector mid-session never
--- renumbers the screen you are working on. Newcomers get the lowest free block.
+-- 10 workspaces per monitor, never shared. The internal panel always owns 1-10;
+-- external monitors get 11-20, 21-30, ... ordered left to right. Block 1 stays
+-- reserved for the internal panel even while it is disconnected, so nothing
+-- renumbers when the lid opens or closes.
 local PER_MONITOR = 10
-local blocks      = {} -- monitor name -> block index, sticky for the session
 
--- A config reload wipes the whole Lua state (ConfigManager reinitLuaState), taking
--- `blocks` with it. Re-derive it from where workspaces actually are, so a reload
--- never renumbers the screen you are working on. Only seeds when empty, so a newly
--- connected monitor that Hyprland auto-assigned a workspace to cannot steal a block.
-local function seed_blocks_from_live_state()
-    if next(blocks) ~= nil then return end
+-- DRM names built-in panels eDP-*/LVDS-*/DSI-*; anything else is external.
+local function is_internal(name)
+    return name:match("^eDP") or name:match("^LVDS") or name:match("^DSI")
+end
+
+local function by_position(a, b)
+    if a.x ~= b.x then return a.x < b.x end
+    return a.y < b.y -- tiebreak for vertically stacked screens
+end
+
+local function do_assign()
+    local internal, external = {}, {}
+    for _, mon in ipairs(hl.get_monitors()) do -- excludes mirrors and disabled outputs
+        table.insert(is_internal(mon.name) and internal or external, mon)
+    end
+    table.sort(internal, by_position)
+    table.sort(external, by_position)
+
+    -- block -> monitor name. Block 1 is the internal panel's; externals start after
+    -- it, and after it even when no internal panel is connected.
+    local owner    = {}
+    local reserved = math.max(#internal, 1)
+    for i, mon in ipairs(internal) do owner[i] = mon.name end
+    for i, mon in ipairs(external) do owner[reserved + i] = mon.name end
+
+    for block, name in pairs(owner) do
+        local base = (block - 1) * PER_MONITOR
+        for n = 1, PER_MONITOR do
+            hl.workspace_rule({
+                workspace = tostring(base + n),
+                monitor   = name,
+                default   = (n == 1),
+            })
+        end
+    end
+
+    -- Hyprland stamps m_lastMonitor on every workspace when a monitor disconnects and
+    -- drags them all back on reconnect (Monitor.cpp onDisconnect/onConnect). That path
+    -- ignores workspace rules, so put strays back where their block says they belong.
     for _, ws in ipairs(hl.get_workspaces()) do
-        local mon, id = ws.monitor, ws.id
-        if mon and id and id > 0 then -- id > 0 skips special/named workspaces
-            local b = math.floor((id - 1) / PER_MONITOR) + 1
-            if not blocks[mon.name] or b < blocks[mon.name] then
-                blocks[mon.name] = b
+        local id, cur = ws.id, ws.monitor
+        if id and id > 0 and cur then -- id > 0 skips special/named workspaces
+            local want = owner[math.floor((id - 1) / PER_MONITOR) + 1]
+            if want and want ~= cur.name then
+                hl.dispatch(hl.dsp.workspace.move({ workspace = tostring(id), monitor = want }))
             end
         end
     end
 end
 
+-- Moving workspaces emits workspace.moveToMonitor / monitorChanged, and
+-- hl.workspace_rule schedules REFRESH_MONITOR_STATES -- either could re-enter this
+-- through monitor.layout_changed. A loop here would hang the compositor.
+local applying = false
 local function assign_workspaces()
-    seed_blocks_from_live_state()
-
-    local mons = hl.get_monitors() -- already excludes mirrors and disabled outputs
-    table.sort(mons, function(a, b)
-        if a.x ~= b.x then return a.x < b.x end
-        return a.y < b.y -- tiebreak for vertically stacked screens
-    end)
-
-    -- Honour remembered blocks that are still free; drop the rest for reassignment.
-    local taken = {}
-    for _, mon in ipairs(mons) do
-        local b = blocks[mon.name]
-        if b and not taken[b] then
-            taken[b] = true
-        else
-            blocks[mon.name] = nil
-        end
-    end
-
-    for _, mon in ipairs(mons) do
-        if not blocks[mon.name] then
-            local b = 1
-            while taken[b] do b = b + 1 end
-            blocks[mon.name] = b
-            taken[b] = true
-        end
-    end
-
-    for _, mon in ipairs(mons) do
-        local base = (blocks[mon.name] - 1) * PER_MONITOR
-        for i = 1, PER_MONITOR do
-            hl.workspace_rule({
-                workspace = tostring(base + i),
-                monitor   = mon.name,
-                default   = (i == 1),
-            })
-        end
-    end
+    if applying then return end
+    applying = true
+    local ok, err = pcall(do_assign)
+    applying = false -- released even on error, so no silent lockout
+    if not ok then error(err, 0) end
 end
 
 hl.on("hyprland.start", assign_workspaces)

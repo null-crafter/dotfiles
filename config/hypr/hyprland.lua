@@ -1,10 +1,15 @@
 -- Hyprland 0.56.2 -- https://wiki.hypr.land/
 require("monitors")
 
-local term  = "kitty"
-local dmenu = "fuzzel"
-local mod   = "SUPER" -- Meta / Win key
-local fm    = "dolphin"
+-- Resolved from package.path, which Hyprland prepends with the config dir
+-- (ConfigManager.cpp:534-545). assert so a missing file fails loudly.
+local MONITORS_FILE = assert(package.searchpath("monitors", package.path),
+    "monitors.lua not found on package.path")
+
+local term          = "kitty"
+local dmenu         = "fuzzel"
+local mod           = "SUPER" -- Meta / Win key
+local fm            = "dolphin"
 
 -- Talks to the running `noctalia --daemon`. When the daemon is down this exits 1
 -- and prints to stderr -- but Hyprland's executor points the child's stderr at
@@ -31,6 +36,12 @@ hl.config({
     -- that listener fires on key *release* too, so it would undo SUPER+Escape the
     -- instant you let go. Nudge the mouse or trackpad to wake.
     misc    = { mouse_move_enables_dpms = true },
+    -- SDR content is authored for gamma 2.2 displays, but the default pipeline
+    -- decodes it with the sRGB curve, whose linear toe near black lifts the shadows
+    -- -- grey blacks, washed-out mids. Treat non-colour-managed surfaces (nearly
+    -- every app) as gamma 2.2 instead: Renderer.cpp:1932 only sets an explicit source
+    -- curve for srgb/gamma22/gamma22force, and falls through on "default".
+    render  = { cm_sdr_eotf = "gamma22" },
 })
 
 -- Noctalia owns the bar, notifications, lock screen, wallpaper and OSDs.
@@ -70,11 +81,14 @@ for key, dir in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
     hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
 end
 
--- 10 workspaces per monitor, never shared. The internal panel always owns 1-10;
--- external monitors get 11-20, 21-30, ... ordered left to right. Block 1 stays
--- reserved for the internal panel even while it is disconnected, so nothing
--- renumbers when the lid opens or closes.
-local PER_MONITOR = 10
+-- 10 workspaces per monitor, never shared. Blocks go to monitors in role order --
+-- the internal panel first when it is connected, then externals left to right --
+-- and a monitor never loses a block it already holds. Nothing is reserved for an
+-- absent panel: on a desktop or a clamshelled laptop that would leave workspaces
+-- 1-10 bound to nothing, and r~N would hand them to every screen at once.
+local PER_MONITOR  = 10
+local blocks       = {}  -- monitor name -> block index, sticky within this Lua state
+local last_applied = nil -- signature of the block->monitor map we last wrote rules for
 
 -- DRM names built-in panels eDP-*/LVDS-*/DSI-*; anything else is external.
 local function is_internal(name)
@@ -86,7 +100,25 @@ local function by_position(a, b)
     return a.y < b.y -- tiebreak for vertically stacked screens
 end
 
-local function do_assign()
+-- A config reload wipes the Lua state (ConfigManager reinitLuaState), taking
+-- `blocks` with it. Re-derive from where workspaces actually are so a reload never
+-- renumbers a screen. Seeds only when empty, so a monitor Hyprland just auto-assigned
+-- a workspace to cannot steal a block from an incumbent.
+local function seed_blocks_from_live_state()
+    if next(blocks) ~= nil then return end
+    for _, ws in ipairs(hl.get_workspaces()) do
+        local mon, id = ws.monitor, ws.id
+        if mon and id and id > 0 then -- id > 0 skips special/named workspaces
+            local b = math.floor((id - 1) / PER_MONITOR) + 1
+            if not blocks[mon.name] or b < blocks[mon.name] then blocks[mon.name] = b end
+        end
+    end
+end
+
+-- block index -> monitor name
+local function compute_owner()
+    seed_blocks_from_live_state()
+
     local internal, external = {}, {}
     for _, mon in ipairs(hl.get_monitors()) do -- excludes mirrors and disabled outputs
         table.insert(is_internal(mon.name) and internal or external, mon)
@@ -94,21 +126,97 @@ local function do_assign()
     table.sort(internal, by_position)
     table.sort(external, by_position)
 
-    -- block -> monitor name. Block 1 is the internal panel's; externals start after
-    -- it, and after it even when no internal panel is connected.
-    local owner    = {}
-    local reserved = math.max(#internal, 1)
-    for i, mon in ipairs(internal) do owner[i] = mon.name end
-    for i, mon in ipairs(external) do owner[reserved + i] = mon.name end
+    local ordered = {}
+    for _, m in ipairs(internal) do ordered[#ordered + 1] = m end
+    for _, m in ipairs(external) do ordered[#ordered + 1] = m end
 
-    for block, name in pairs(owner) do
-        local base = (block - 1) * PER_MONITOR
-        for n = 1, PER_MONITOR do
-            hl.workspace_rule({
-                workspace = tostring(base + n),
-                monitor   = name,
-                default   = (n == 1),
-            })
+    -- Honour blocks already held, then fill the gaps with the lowest free one, so
+    -- closing the lid or plugging in a projector never renumbers a live screen.
+    local taken = {}
+    for _, m in ipairs(ordered) do
+        local b = blocks[m.name]
+        if b and not taken[b] then taken[b] = true else blocks[m.name] = nil end
+    end
+    for _, m in ipairs(ordered) do
+        if not blocks[m.name] then
+            local b = 1
+            while taken[b] do b = b + 1 end
+            blocks[m.name], taken[b] = b, true
+        end
+    end
+
+    local owner = {}
+    for _, m in ipairs(ordered) do owner[blocks[m.name]] = m.name end
+    return owner
+end
+
+-- SUPER+ALT+Escape turns every external screen off, SUPER+ALT+grave brings them
+-- back. Disabling the output makes the display see a real signal loss and drop to
+-- standby, unlike the DPMS blank on SUPER+Escape which an HDMI monitor answers by
+-- re-scanning its inputs and lighting its own panel back up.
+-- (The other session binds are further up; these live here because they capture
+-- is_internal, which must already be defined when hl.bind runs.)
+hl.bind(mod .. " + ALT + Escape", function()
+    local mons = hl.get_monitors() -- already excludes disabled outputs
+
+    -- Keep block 1's monitor alive: the internal panel, or on a desktop/clamshell
+    -- the leftmost screen. Disabling every output would leave no display at all.
+    local keep = compute_owner()[1]
+    if not keep then -- block 1 ownerless (lid shut, externals hold 2+ by stickiness)
+        local leftmost = { table.unpack(mons) }
+        table.sort(leftmost, by_position)
+        keep = leftmost[1] and leftmost[1].name
+    end
+
+    for _, m in ipairs(mons) do
+        if m.name ~= keep then
+            hl.monitor({ output = m.name, disabled = true })
+        end
+    end
+end)
+
+hl.bind(mod .. " + ALT + grave", function()
+    -- hl.monitor MERGES into the existing rule, and monitors.lua never mentions
+    -- `disabled`, so re-applying it alone would leave disabled = true and the output
+    -- would stay dark. Lua cannot enumerate disabled outputs, so take the names from
+    -- the file itself: wrap hl.monitor for the duration of the dofile so every
+    -- output it declares also gets disabled = false. An output the file marks
+    -- disabled explicitly (nwg-displays writes that for ones you turned off in
+    -- its UI) is left alone.
+    local real = hl.monitor
+    hl.monitor = function(t)
+        if t.disabled == nil then t.disabled = false end
+        return real(t)
+    end
+    local ok, err = pcall(dofile, MONITORS_FILE)
+    hl.monitor = real -- restored even if the file errors
+    if not ok then error(err, 0) end
+end)
+
+local function do_assign()
+    local owner = compute_owner()
+
+    -- Rewriting rules schedules REFRESH_MONITOR_STATES, which re-applies monitor rules
+    -- and re-enables a DPMS-disabled output -- and that emits monitor.layout_changed,
+    -- which lands right back here. Only touch the rules when the mapping really changed,
+    -- so the cycle cannot start. (A config reload resets this with the Lua state, so the
+    -- rules get written once after every reload, which is exactly when they are needed.)
+    local sig = {}
+    for block, name in pairs(owner) do sig[#sig + 1] = block .. "=" .. name end
+    table.sort(sig)
+    sig = table.concat(sig, ",")
+
+    if sig ~= last_applied then
+        last_applied = sig
+        for block, name in pairs(owner) do
+            local base = (block - 1) * PER_MONITOR
+            for n = 1, PER_MONITOR do
+                hl.workspace_rule({
+                    workspace = tostring(base + n),
+                    monitor   = name,
+                    default   = (n == 1),
+                })
+            end
         end
     end
 
@@ -178,3 +286,9 @@ hl.bind("XF86MonBrightnessDown", noctalia("brightness-down"), { locked = true, r
 hl.bind("XF86AudioPlay", noctalia("media toggle"), { locked = true })
 hl.bind("XF86AudioNext", noctalia("media next"), { locked = true })
 hl.bind("XF86AudioPrev", noctalia("media previous"), { locked = true })
+
+hl.window_rule({
+    name        = "mpv-no-auto-hdr",
+    match       = { class = "^mpv$" },
+    no_auto_hdr = true,
+})

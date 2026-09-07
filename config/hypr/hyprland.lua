@@ -71,6 +71,7 @@ hl.bind(mod .. " + SHIFT + R", hl.dsp.exec_cmd(noctalia_restart))
 
 hl.bind(mod .. " + N", noctalia("panel-toggle control-center"))
 hl.bind(mod .. " + comma", noctalia("settings-toggle"))
+hl.bind(mod .. " + B", noctalia("bar-toggle"))
 
 hl.bind("Print", noctalia("screenshot-region"))
 hl.bind("SHIFT + Print", noctalia("screenshot-fullscreen"))
@@ -124,6 +125,11 @@ local function compute_owner()
         table.insert(is_internal(mon.name) and internal or external, mon)
     end
     table.sort(internal, by_position)
+    -- The internal panel owns block 1 whenever it is connected, even if an external
+    -- grabbed it first. At boot Hyprland connects outputs one at a time and puts
+    -- workspace 1 on whichever comes first (Monitor.cpp onConnect: setupDefaultWS
+    -- runs before monitor.added fires), and stickiness alone would keep it there.
+    if internal[1] then blocks[internal[1].name] = 1 end
     table.sort(external, by_position)
 
     local ordered = {}

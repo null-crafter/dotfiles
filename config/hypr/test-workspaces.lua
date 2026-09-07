@@ -274,5 +274,29 @@ local off = 0
 for _, cc in ipairs(monitor_calls) do if cc.disabled then off = off + 1 end end
 check("L. desktop: outputs left alive", #fake_monitors - off, 1)
 
+-- Scenario M: real boot order. Hyprland connects outputs one at a time and creates
+-- workspace 1 on the FIRST one (Monitor.cpp onConnect: setupDefaultWS runs before
+-- monitor.added). If that is the external, stickiness must not let it keep 1-10 once
+-- the internal panel shows up.
+fresh({})                                             -- load: nothing enumerated yet
+fake_workspaces = { ws(1, HDMI) }
+connect({ HDMI })                                     -- HDMI first, alone: takes 1
+check("M. external alone at boot holds 1-10",          block_of("HDMI-A-1"), 1)
+
+connect({ HDMI, EDP })                                -- then the panel arrives
+local mmoved = {}
+for _, m in ipairs(moves) do mmoved[m.workspace] = m.monitor end
+check("M. internal arrives: eDP-1 takes 1-10",         block_of("eDP-1"),    1)
+check("M. internal arrives: HDMI-A-1 pushed to 11-20", block_of("HDMI-A-1"), 11)
+check("M. stray ws 1 moved to the internal",           mmoved["1"],          "eDP-1")
+
+-- Lid opens after a clamshell session: the panel reclaims 1-10, the external that
+-- held it gets the lowest free block, the other external is NOT renumbered.
+fresh({ HDMI, DP1 })                                  -- clamshell: HDMI 1-10, DP-1 11-20
+connect({ HDMI, DP1, EDP })
+check("M. lid opens: eDP-1 takes 1-10 back",           block_of("eDP-1"),    1)
+check("M. lid opens: DP-1 keeps 11-20",                block_of("DP-1"),     11)
+check("M. lid opens: HDMI-A-1 gets 21-30",             block_of("HDMI-A-1"), 21)
+
 print(fails == 0 and "\nALL PASS" or ("\n" .. fails .. " FAILED"))
 os.exit(fails == 0 and 0 or 1)

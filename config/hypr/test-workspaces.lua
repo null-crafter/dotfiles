@@ -30,11 +30,12 @@ local dsp_workspace = setmetatable({
 local dsp = setmetatable({ workspace = dsp_workspace },
                          { __index = function() return stub() end })
 
-local binds, monitor_calls = {}, {}
+local binds, monitor_calls, configs = {}, {}, {}
 
 hl = setmetatable({
   get_monitors = function() return fake_monitors end,
   get_workspaces = function() return fake_workspaces end,
+  config = function(t) table.insert(configs, t) end,
   workspace_rule = function(t) table.insert(rules, t) end,
   monitor = function(t) table.insert(monitor_calls, t) end,
   bind = function(key, fn) if type(fn) == "function" then binds[key] = fn end end,
@@ -297,6 +298,23 @@ connect({ HDMI, DP1, EDP })
 check("M. lid opens: eDP-1 takes 1-10 back",           block_of("eDP-1"),    1)
 check("M. lid opens: DP-1 keeps 11-20",                block_of("DP-1"),     11)
 check("M. lid opens: HDMI-A-1 gets 21-30",             block_of("HDMI-A-1"), 21)
+
+-- Scenario N: presentation mode. The flag must alternate -- a toggle that only ever
+-- sets "on" is the classic failure, and gaps would stay fat after the talk.
+configs = {}
+fresh({ EDP })                                  -- load-time hl.config lands in configs[1]
+local normal  = configs[1].general
+local present = binds["SUPER + SHIFT + P"]
+check("N. presentation bind exists", type(present), "function")
+if type(present) == "function" then
+  local n = #configs
+  present()
+  check("N. press 1: gaps_out grows", configs[n + 1].general.gaps_out > normal.gaps_out, true)
+  check("N. press 1: gaps_in grows",  configs[n + 1].general.gaps_in  > normal.gaps_in,  true)
+  present()
+  check("N. press 2: gaps_out restored", configs[n + 2].general.gaps_out, normal.gaps_out)
+  check("N. press 2: gaps_in restored",  configs[n + 2].general.gaps_in,  normal.gaps_in)
+end
 
 print(fails == 0 and "\nALL PASS" or ("\n" .. fails .. " FAILED"))
 os.exit(fails == 0 and 0 or 1)

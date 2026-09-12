@@ -29,8 +29,12 @@ local noctalia_restart =
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 
+-- Normal gaps, and the fatter pair SUPER+SHIFT+P swaps in for presenting.
+local GAPS_IN, GAPS_OUT                 = 5, 5
+local PRESENT_GAPS_IN, PRESENT_GAPS_OUT = 15, 40
+
 hl.config({
-    general = { gaps_in = 5, gaps_out = 10, border_size = 2, layout = "master" },
+    general = { gaps_in = GAPS_IN, gaps_out = GAPS_OUT, border_size = 2, layout = "master" },
     input   = { kb_layout = "us", follow_mouse = 1, repeat_delay = 200, repeat_rate = 35 },
     -- Wake the screens on pointer motion. Deliberately NOT key_press_enables_dpms:
     -- that listener fires on key *release* too, so it would undo SUPER+Escape the
@@ -61,6 +65,21 @@ hl.bind(mod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mod .. " + F", hl.dsp.window.fullscreen())
 hl.bind(mod .. " + E", hl.dsp.exec_cmd(fm))
 hl.bind(mod .. " + C", hl.dsp.window.center())
+
+-- Presentation mode: fatter gaps so a projected window sits inside the frame.
+-- hl.config from a keybind is a dynamic parse, and gaps carry REFRESH_LAYOUTS
+-- (ConfigValues.cpp:169-170), so this applies immediately -- no reload. A reload
+-- re-runs the config block above and wipes this flag, so both reset together.
+local presenting = false
+hl.bind(mod .. " + SHIFT + P", function()
+    presenting = not presenting
+    hl.config({
+        general = {
+            gaps_in  = presenting and PRESENT_GAPS_IN or GAPS_IN,
+            gaps_out = presenting and PRESENT_GAPS_OUT or GAPS_OUT,
+        }
+    })
+end)
 
 -- Session: panel for the normal case, hard exit as the escape hatch.
 hl.bind(mod .. " + M", noctalia("panel-toggle session"))

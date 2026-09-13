@@ -13,3 +13,10 @@ family = "JetBrainsMono Nerd Font"
 [font.bold_italic]
 family = "JetBrainsMono Nerd Font"
 
+
+# mkdir -p ~/.config/alacritty/themes
+# git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
+[general]
+import = [
+    "~/.config/alacritty/themes/themes/tokyo_night_storm.toml"
+]

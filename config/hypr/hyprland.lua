@@ -6,7 +6,7 @@ require("monitors")
 local MONITORS_FILE = assert(package.searchpath("monitors", package.path),
     "monitors.lua not found on package.path")
 
-local term          = "kitty"
+local term          = "alacritty"
 local dmenu         = "fuzzel"
 local mod           = "SUPER" -- Meta / Win key
 local fm            = "dolphin"

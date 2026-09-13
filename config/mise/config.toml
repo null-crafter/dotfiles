@@ -2,12 +2,12 @@
 package_manager = "aube"
 
 [settings]
-plugin_autoupdate_last_check_duration = "2000d"
+plugin_autoupdate_last_check_duration = "2000d" #  do not check!
 
 [tools]
 aube = "latest"
 bun = "latest"
-"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@anthropic-ai/claude-code" = {version="latest", allow_builds = true}
 "npm:husky" = "latest"
 "npm:opencode-ai" = "latest"
 "pipx:yt-dlp" = "latest"
@@ -22,7 +22,10 @@ rust-analyzer = "latest"
 "pipx:ruff" = "latest"
 "pipx:ty" = "latest"
 usage = "latest"
-"npm:@opencode-ai/cli" = {version = "next", npm_args = "--ignore-scripts=false", bun_args = "--trust"}
+"npm:@opencode-ai/cli" = {version = "next", allow_builds=true}
 "cargo:dysk" = "latest"
 "npm:wrangler" = "latest"
 ollama = "0.32.13"
+"cargo:eza" = "latest"
+gofumpt = "latest"
+stylua = "latest"

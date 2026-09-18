@@ -8,13 +8,17 @@ plugin_autoupdate_last_check_duration = "2000d" #  do not check!
 aube = "latest"
 bun = "latest"
 "npm:@anthropic-ai/claude-code" = {version="latest", allow_builds = true}
+"npm:opencode-with-claude" = {version="latest", allow_builds = true}
+
 "npm:husky" = "latest"
-"npm:opencode-ai" = "latest"
+"npm:opencode-ai" =  {version="latest", allow_builds = true}
+
 "pipx:yt-dlp" = "latest"
 "npm:@vercel/vc-native" = "latest"
 pnpm = "latest"
 uv = "latest"
-rust = "latest"
+# rust = "latest"
+rust = "nightly"
 "cargo:cargo-binstall" = "latest"
 "cargo:create-tauri-app" = "latest"
 "cargo:tauri-cli" = "2"
@@ -29,3 +33,7 @@ ollama = "0.32.13"
 "cargo:eza" = "latest"
 gofumpt = "latest"
 stylua = "latest"
+"npm:prettier" = "latest"
+"npm:@earendil-works/pi-coding-agent" = "latest"
+rtk = "latest"
+herdr = "latest"

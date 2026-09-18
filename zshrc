@@ -186,6 +186,9 @@ alias ....='cd ../../../'
 
 
 # BEGIN fuctions
+h() {
+    herdr terminal attach "$@" || herdr agent list | jq .result.agents
+}
 ruff_fmt() {
     ruff check --select I --fix "$@"
     ruff format "$@"

@@ -31,11 +31,15 @@ local dsp = setmetatable({ workspace = dsp_workspace },
                          { __index = function() return stub() end })
 
 local binds, monitor_calls, configs = {}, {}, {}
+local window_rules = {}
+HL_VERSION = "0.56.2"   -- what the stubbed hl.version() answers; scenarios override it
 
 hl = setmetatable({
   get_monitors = function() return fake_monitors end,
   get_workspaces = function() return fake_workspaces end,
   config = function(t) table.insert(configs, t) end,
+  version = function() return HL_VERSION end,
+  window_rule = function(t) table.insert(window_rules, t) end,
   workspace_rule = function(t) table.insert(rules, t) end,
   monitor = function(t) table.insert(monitor_calls, t) end,
   bind = function(key, fn) if type(fn) == "function" then binds[key] = fn end end,
@@ -315,6 +319,14 @@ if type(present) == "function" then
   check("N. press 2: gaps_out restored", configs[n + 2].general.gaps_out, normal.gaps_out)
   check("N. press 2: gaps_in restored",  configs[n + 2].general.gaps_in,  normal.gaps_in)
 end
+
+-- Scenario O: the mpv rule is a 0.56 effect. It must be registered on 0.56.2 and NOT on
+-- 0.55.2 (Debian), where the unknown field would flag every config load as failed.
+window_rules = {}; HL_VERSION = "0.56.2"; fresh({ EDP })
+check("O. 0.56.2 registers the mpv rule",   #window_rules, 1)
+check("O. 0.56.2 rule carries no_auto_hdr", window_rules[1] and window_rules[1].no_auto_hdr, true)
+window_rules = {}; HL_VERSION = "0.55.2"; fresh({ EDP })
+check("O. 0.55.2 registers no window rule", #window_rules, 0)
 
 print(fails == 0 and "\nALL PASS" or ("\n" .. fails .. " FAILED"))
 os.exit(fails == 0 and 0 or 1)

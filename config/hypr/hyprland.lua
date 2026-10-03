@@ -54,7 +54,8 @@ hl.on("hyprland.start", function()
 end)
 
 hl.bind(mod .. " + Return", hl.dsp.exec_cmd(term))
-hl.bind(mod .. " + Space", noctalia("panel-toggle launcher"))
+-- hl.bind(mod .. " + Space", noctalia("panel-toggle launcher"))
+hl.bind(mod .. " + Space", hl.dsp.exec_cmd("vicinae open"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd(dmenu))
 hl.bind(mod .. " + Tab", noctalia("window-switcher"))
 

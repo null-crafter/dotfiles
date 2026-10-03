@@ -38,3 +38,7 @@ stylua = "latest"
 rtk = "latest"
 herdr = "latest"
 neovim = "stable"
+go = "latest"
+"npm:@openai/codex" = "latest"
+"pypi:yt-dlp" = "latest"
+
